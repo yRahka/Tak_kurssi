@@ -1,0 +1,63 @@
+class Room:
+    def __init__(self, name, description):
+        self.name = name
+        self.description = description
+        self.connections = {}
+        self.items = []
+
+    def connect(self, direction, room):
+        self.connections[direction] = room
+
+    def __str__(self):
+        return f"{self.name}\n{self.description}\nItems in the room: {', '.join(self.items) if self.items else 'None'}"
+
+
+def main():
+    print("Welcome to the Text-based Adventure Game!")
+    
+    # Create rooms
+    room1 = Room("Entrance Hall", "A grand hall with high ceilings and a dusty chandelier.")
+    room2 = Room("Library", "Shelves filled with ancient books. A mysterious glow comes from the corner.")
+    room3 = Room("Treasure Room", "A small room glittering with gold and jewels.")
+
+    # Connect rooms
+    room1.connect("north", room2)
+    room2.connect("south", room1)
+    room2.connect("east", room3)
+    room3.connect("west", room2)
+
+    # Place items
+    room2.items.append("magic key")
+    room3.items.append("treasure chest")
+
+    current_room = room1
+    inventory = []
+
+    while True:
+        print("\n" + str(current_room))
+        command = input("\nWhat do you want to do? (move [direction] / take [item] / inventory / quit): ").strip().lower()
+
+        if command.startswith("move "):
+            direction = command.split()[1]
+            if direction in current_room.connections:
+                current_room = current_room.connections[direction]
+            else:
+                print("You can't go that way.")
+        elif command.startswith("take "):
+            item = command.split()[1]
+            if item in current_room.items:
+                inventory.append(item)
+                current_room.items.remove(item)
+                print(f"You took the {item}.")
+            else:
+                print("That item isn't here.")
+        elif command == "inventory":
+            print(f"Your inventory: {', '.join(inventory) if inventory else 'empty'}")
+        elif command == "quit":
+            print("Thanks for playing!")
+            break
+        else:
+            print("Invalid command. Try again.")
+
+if __name__ == "__main__":
+    main()
