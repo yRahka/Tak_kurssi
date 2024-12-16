@@ -1,63 +1,109 @@
-class Room:
-    def __init__(self, name, description):
-        self.name = name
-        self.description = description
-        self.connections = {}
-        self.items = []
+# Text-Based Adventure Game in PowerShell
 
-    def connect(self, direction, room):
-        self.connections[direction] = room
+# Function to display game instructions
+function Show-Instructions {
+    Write-Host "
+    Text-Based Adventure Game
+    =========================
+    Commands:
+    - 'go [direction]' to move (e.g., 'go north')
+    - 'get [item]' to pick up an item (e.g., 'get key')
+    - 'inventory' to check your items
+    - 'look' to inspect the current room
+    - 'quit' to exit the game
+    "
+}
 
-    def __str__(self):
-        return f"{self.name}\n{self.description}\nItems in the room: {', '.join(self.items) if self.items else 'None'}"
+# Initialize game data
+$Rooms = @{
+    "Hall" = @{
+        Description = "You are in a grand hall. There's a key on a table.";
+        Item = "key";
+        Exits = @{ North = "Kitchen"; East = "Living Room" }
+    };
+    "Kitchen" = @{
+        Description = "You are in a kitchen. The air smells of spices.";
+        Item = $null;
+        Exits = @{ South = "Hall" }
+    };
+    "Living Room" = @{
+        Description = "You are in a cozy living room. A locked treasure chest sits in the corner.";
+        Item = "treasure";
+        Exits = @{ West = "Hall" }
+    }
+}
 
+$Inventory = @()
+$CurrentRoom = "Hall"
 
-def main():
-    print("Welcome to the Text-based Adventure Game!")
-    
-    # Create rooms
-    room1 = Room("Entrance Hall", "A grand hall with high ceilings and a dusty chandelier.")
-    room2 = Room("Library", "Shelves filled with ancient books. A mysterious glow comes from the corner.")
-    room3 = Room("Treasure Room", "A small room glittering with gold and jewels.")
+# Start the game
+Show-Instructions
 
-    # Connect rooms
-    room1.connect("north", room2)
-    room2.connect("south", room1)
-    room2.connect("east", room3)
-    room3.connect("west", room2)
+while ($true) {
+    Write-Host "`nYou are in the $CurrentRoom."
+    Write-Host $Rooms[$CurrentRoom].Description
 
-    # Place items
-    room2.items.append("magic key")
-    room3.items.append("treasure chest")
+    # Check for items in the room
+    if ($Rooms[$CurrentRoom].Item) {
+        Write-Host "You see a $($Rooms[$CurrentRoom].Item) here."
+    }
 
-    current_room = room1
-    inventory = []
+    # Get user input
+    $Command = Read-Host "What will you do?"
 
-    while True:
-        print("\n" + str(current_room))
-        command = input("\nWhat do you want to do? (move [direction] / take [item] / inventory / quit): ").strip().lower()
+    # Exit the game
+    if ($Command -eq "quit") {
+        Write-Host "Thanks for playing! Goodbye."
+        break
+    }
 
-        if command.startswith("move "):
-            direction = command.split()[1]
-            if direction in current_room.connections:
-                current_room = current_room.connections[direction]
-            else:
-                print("You can't go that way.")
-        elif command.startswith("take "):
-            item = command.split()[1]
-            if item in current_room.items:
-                inventory.append(item)
-                current_room.items.remove(item)
-                print(f"You took the {item}.")
-            else:
-                print("That item isn't here.")
-        elif command == "inventory":
-            print(f"Your inventory: {', '.join(inventory) if inventory else 'empty'}")
-        elif command == "quit":
-            print("Thanks for playing!")
-            break
-        else:
-            print("Invalid command. Try again.")
+    # Moving between rooms
+    elseif ($Command -like "go *") {
+        $Direction = $Command -replace "go ", ""
+        if ($Rooms[$CurrentRoom].Exits.$Direction) {
+            $CurrentRoom = $Rooms[$CurrentRoom].Exits.$Direction
+        } else {
+            Write-Host "You can't go that way!"
+        }
+    }
 
-if __name__ == "__main__":
-    main()
+    # Picking up items
+    elseif ($Command -like "get *") {
+        $Item = $Command -replace "get ", ""
+        if ($Rooms[$CurrentRoom].Item -eq $Item) {
+            Write-Host "You picked up the $Item!"
+            $Inventory += $Item
+            $Rooms[$CurrentRoom].Item = $null
+        } else {
+            Write-Host "There is no $Item here."
+        }
+    }
+
+    # Checking inventory
+    elseif ($Command -eq "inventory") {
+        if ($Inventory.Count -gt 0) {
+            Write-Host "Inventory: $($Inventory -join ', ')"
+        } else {
+            Write-Host "Your inventory is empty."
+        }
+    }
+
+    # Inspecting the room
+    elseif ($Command -eq "look") {
+        Write-Host $Rooms[$CurrentRoom].Description
+        if ($Rooms[$CurrentRoom].Item) {
+            Write-Host "You see a $($Rooms[$CurrentRoom].Item) here."
+        }
+    }
+
+    # Unknown command
+    else {
+        Write-Host "I don't understand that command."
+    }
+
+    # Win condition
+    if ($Inventory -contains "treasure") {
+        Write-Host "`nCongratulations! You found the treasure and won the game!"
+        break
+    }
+}
