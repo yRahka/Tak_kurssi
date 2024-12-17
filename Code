@@ -1,4 +1,4 @@
-# Text-Based Adventure Game in PowerShell
+# Text-Based Adventure Game in PowerShell with Updated Directions (up, down, right, left)
 
 # Function to display game instructions
 function Show-Instructions {
@@ -6,10 +6,11 @@ function Show-Instructions {
     Text-Based Adventure Game
     =========================
     Commands:
-    - 'go [direction]' to move (e.g., 'go north')
+    - 'go [direction]' to move (e.g., 'go up')
     - 'get [item]' to pick up an item (e.g., 'get key')
+    - 'use [item]' to use an item (e.g., 'use key')
     - 'inventory' to check your items
-    - 'look' to inspect the current room
+    - 'look' to inspect the current room (reveals hidden items)
     - 'quit' to exit the game
     "
 }
@@ -19,17 +20,21 @@ $Rooms = @{
     "Hall" = @{
         Description = "You are in a grand hall. There's a key on a table.";
         Item = "key";
-        Exits = @{ North = "Kitchen"; East = "Living Room" }
+        HiddenItem = $null;  # No hidden item here
+        Exits = @{ Up = "Kitchen"; Right = "Living Room" }
     };
     "Kitchen" = @{
         Description = "You are in a kitchen. The air smells of spices.";
         Item = $null;
-        Exits = @{ South = "Hall" }
+        HiddenItem = "map";  # Hidden item: Map
+        Exits = @{ Down = "Hall" }
     };
     "Living Room" = @{
         Description = "You are in a cozy living room. A locked treasure chest sits in the corner.";
-        Item = "treasure";
-        Exits = @{ West = "Hall" }
+        Item = $null;  # Treasure is locked inside the chest
+        HiddenItem = "note"; # Hidden item: A note giving a clue
+        Exits = @{ Left = "Hall" };
+        Locked = $true
     }
 }
 
@@ -43,7 +48,7 @@ while ($true) {
     Write-Host "`nYou are in the $CurrentRoom."
     Write-Host $Rooms[$CurrentRoom].Description
 
-    # Check for items in the room
+    # Show visible items in the room
     if ($Rooms[$CurrentRoom].Item) {
         Write-Host "You see a $($Rooms[$CurrentRoom].Item) here."
     }
@@ -74,8 +79,29 @@ while ($true) {
             Write-Host "You picked up the $Item!"
             $Inventory += $Item
             $Rooms[$CurrentRoom].Item = $null
+        } elseif ($Rooms[$CurrentRoom].HiddenItem -eq $Item) {
+            Write-Host "You picked up the hidden $Item!"
+            $Inventory += $Item
+            $Rooms[$CurrentRoom].HiddenItem = $null
         } else {
             Write-Host "There is no $Item here."
+        }
+    }
+
+    # Using items
+    elseif ($Command -like "use *") {
+        $Item = $Command -replace "use ", ""
+        if ($Inventory -contains $Item) {
+            if ($Item -eq "key" -and $CurrentRoom -eq "Living Room" -and $Rooms[$CurrentRoom].Locked) {
+                Write-Host "You use the key to unlock the treasure chest!"
+                $Rooms[$CurrentRoom].Locked = $false
+                $Rooms[$CurrentRoom].Item = "treasure"
+                $Inventory = $Inventory | Where-Object { $_ -ne "key" }  # Remove key from inventory
+            } else {
+                Write-Host "You can't use the $Item here."
+            }
+        } else {
+            Write-Host "You don't have a $Item."
         }
     }
 
@@ -88,11 +114,19 @@ while ($true) {
         }
     }
 
-    # Inspecting the room
+    # Inspecting the room (look command reveals hidden items)
     elseif ($Command -eq "look") {
         Write-Host $Rooms[$CurrentRoom].Description
         if ($Rooms[$CurrentRoom].Item) {
             Write-Host "You see a $($Rooms[$CurrentRoom].Item) here."
+        }
+        if ($Rooms[$CurrentRoom].HiddenItem) {
+            Write-Host "After looking closely, you find a hidden $($Rooms[$CurrentRoom].HiddenItem)!"
+            # Move the hidden item to visible items
+            $Rooms[$CurrentRoom].Item = $Rooms[$CurrentRoom].HiddenItem
+            $Rooms[$CurrentRoom].HiddenItem = $null
+        } else {
+            Write-Host "You don't find anything else of interest."
         }
     }
 
@@ -107,3 +141,4 @@ while ($true) {
         break
     }
 }
+
