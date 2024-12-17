@@ -1,6 +1,3 @@
-# Text-Based Adventure Game in PowerShell with Updated Directions (up, down, right, left)
-
-# Function to display game instructions
 function Show-Instructions {
     Write-Host "
     Text-Based Adventure Game
@@ -15,24 +12,23 @@ function Show-Instructions {
     "
 }
 
-# Initialize game data
 $Rooms = @{
     "Hall" = @{
         Description = "You are in a grand hall. There's a key on a table.";
         Item = "key";
-        HiddenItem = $null;  # No hidden item here
+        HiddenItem = $null;
         Exits = @{ Up = "Kitchen"; Right = "Living Room" }
     };
     "Kitchen" = @{
         Description = "You are in a kitchen. The air smells of spices.";
         Item = $null;
-        HiddenItem = "map";  # Hidden item: Map
+        HiddenItem = "map";
         Exits = @{ Down = "Hall" }
     };
     "Living Room" = @{
         Description = "You are in a cozy living room. A locked treasure chest sits in the corner.";
-        Item = $null;  # Treasure is locked inside the chest
-        HiddenItem = "note"; # Hidden item: A note giving a clue
+        Item = $null;
+        HiddenItem = "note";
         Exits = @{ Left = "Hall" };
         Locked = $true
     }
@@ -41,28 +37,22 @@ $Rooms = @{
 $Inventory = @()
 $CurrentRoom = "Hall"
 
-# Start the game
 Show-Instructions
 
 while ($true) {
     Write-Host "`nYou are in the $CurrentRoom."
     Write-Host $Rooms[$CurrentRoom].Description
 
-    # Show visible items in the room
     if ($Rooms[$CurrentRoom].Item) {
         Write-Host "You see a $($Rooms[$CurrentRoom].Item) here."
     }
 
-    # Get user input
     $Command = Read-Host "What will you do?"
 
-    # Exit the game
     if ($Command -eq "quit") {
         Write-Host "Thanks for playing! Goodbye."
         break
     }
-
-    # Moving between rooms
     elseif ($Command -like "go *") {
         $Direction = $Command -replace "go ", ""
         if ($Rooms[$CurrentRoom].Exits.$Direction) {
@@ -71,8 +61,6 @@ while ($true) {
             Write-Host "You can't go that way!"
         }
     }
-
-    # Picking up items
     elseif ($Command -like "get *") {
         $Item = $Command -replace "get ", ""
         if ($Rooms[$CurrentRoom].Item -eq $Item) {
@@ -87,8 +75,6 @@ while ($true) {
             Write-Host "There is no $Item here."
         }
     }
-
-    # Using items
     elseif ($Command -like "use *") {
         $Item = $Command -replace "use ", ""
         if ($Inventory -contains $Item) {
@@ -96,7 +82,7 @@ while ($true) {
                 Write-Host "You use the key to unlock the treasure chest!"
                 $Rooms[$CurrentRoom].Locked = $false
                 $Rooms[$CurrentRoom].Item = "treasure"
-                $Inventory = $Inventory | Where-Object { $_ -ne "key" }  # Remove key from inventory
+                $Inventory = $Inventory | Where-Object { $_ -ne "key" }
             } else {
                 Write-Host "You can't use the $Item here."
             }
@@ -104,8 +90,6 @@ while ($true) {
             Write-Host "You don't have a $Item."
         }
     }
-
-    # Checking inventory
     elseif ($Command -eq "inventory") {
         if ($Inventory.Count -gt 0) {
             Write-Host "Inventory: $($Inventory -join ', ')"
@@ -113,8 +97,6 @@ while ($true) {
             Write-Host "Your inventory is empty."
         }
     }
-
-    # Inspecting the room (look command reveals hidden items)
     elseif ($Command -eq "look") {
         Write-Host $Rooms[$CurrentRoom].Description
         if ($Rooms[$CurrentRoom].Item) {
@@ -122,23 +104,18 @@ while ($true) {
         }
         if ($Rooms[$CurrentRoom].HiddenItem) {
             Write-Host "After looking closely, you find a hidden $($Rooms[$CurrentRoom].HiddenItem)!"
-            # Move the hidden item to visible items
             $Rooms[$CurrentRoom].Item = $Rooms[$CurrentRoom].HiddenItem
             $Rooms[$CurrentRoom].HiddenItem = $null
         } else {
             Write-Host "You don't find anything else of interest."
         }
     }
-
-    # Unknown command
     else {
         Write-Host "I don't understand that command."
     }
 
-    # Win condition
     if ($Inventory -contains "treasure") {
         Write-Host "`nCongratulations! You found the treasure and won the game!"
         break
     }
 }
-
