@@ -12,30 +12,62 @@ function Show-Instructions {
     "
 }
 
-$Rooms = @{
-    "Hall" = @{
-        Description = "You are in a grand hall. There's a key on a table.";
-        Item = "key";
-        HiddenItem = $null;
-        Exits = @{ Up = "Kitchen"; Right = "Living Room" }
-    };
-    "Kitchen" = @{
-        Description = "You are in a kitchen. The air smells of spices.";
-        Item = $null;
-        HiddenItem = "map";
-        Exits = @{ Down = "Hall" }
-    };
-    "Living Room" = @{
-        Description = "You are in a cozy living room. A locked treasure chest sits in the corner.";
-        Item = $null;
-        HiddenItem = "note";
-        Exits = @{ Left = "Hall" };
-        Locked = $true
+function Generate-RandomRooms {
+    $RoomNames = @("Hall", "Kitchen", "Living Room", "Library", "Attic", "Basement", "Garden", "Office")
+    $Descriptions = @(
+        "You are in a grand hall with high ceilings.",
+        "You are in a messy kitchen. It smells of old food.",
+        "You are in a cozy living room with a fireplace.",
+        "You are in a dusty library filled with old books.",
+        "You are in a dark and cluttered attic.",
+        "You are in a cold, damp basement. The air is heavy.",
+        "You are in a peaceful garden surrounded by flowers.",
+        "You are in a small office with papers scattered everywhere."
+    )
+    $Items = @("key", "map", "book", "lantern", "shovel", "coin", "treasure", "note")
+    $HiddenItems = @($null, "map", "key", "note", "shovel", $null, "coin", "book")
+
+    $ShuffledRooms = $RoomNames | Sort-Object { Get-Random }
+    $RoomData = @{}
+
+    for ($i = 0; $i -lt $ShuffledRooms.Count; $i++) {
+        $RoomData[$ShuffledRooms[$i]] = @{
+            Description = $Descriptions[$i]
+            Item = $Items | Get-Random
+            HiddenItem = $HiddenItems | Get-Random
+            Exits = @{}
+        }
     }
+
+    $Directions = @("Up", "Down", "Right", "Left")
+    for ($i = 0; $i -lt $ShuffledRooms.Count; $i++) {
+        foreach ($Direction in $Directions | Get-Random -Count 2) {
+            $NextRoom = $ShuffledRooms | Get-Random
+            if ($NextRoom -ne $ShuffledRooms[$i]) {
+                $RoomData[$ShuffledRooms[$i]].Exits.$Direction = $NextRoom
+                $Opposite = switch ($Direction) { "Up" { "Down" } "Down" { "Up" } "Right" { "Left" } "Left" { "Right" } }
+                $RoomData[$NextRoom].Exits.$Opposite = $ShuffledRooms[$i]
+            }
+        }
+    }
+    return $RoomData
 }
 
+$CorrectItemUses = @{
+    "key" = "Living Room"
+    "map" = "Library"
+    "book" = "Office"
+    "lantern" = "Attic"
+    "shovel" = "Garden"
+    "coin" = "Basement"
+    "note" = "Kitchen"
+    "treasure" = "Hall"
+}
+
+$Rooms = Generate-RandomRooms
 $Inventory = @()
-$CurrentRoom = "Hall"
+$CurrentRoom = ($Rooms.Keys | Get-Random)
+$CorrectUsesCount = 0
 
 Show-Instructions
 
@@ -67,10 +99,6 @@ while ($true) {
             Write-Host "You picked up the $Item!"
             $Inventory += $Item
             $Rooms[$CurrentRoom].Item = $null
-        } elseif ($Rooms[$CurrentRoom].HiddenItem -eq $Item) {
-            Write-Host "You picked up the hidden $Item!"
-            $Inventory += $Item
-            $Rooms[$CurrentRoom].HiddenItem = $null
         } else {
             Write-Host "There is no $Item here."
         }
@@ -78,13 +106,16 @@ while ($true) {
     elseif ($Command -like "use *") {
         $Item = $Command -replace "use ", ""
         if ($Inventory -contains $Item) {
-            if ($Item -eq "key" -and $CurrentRoom -eq "Living Room" -and $Rooms[$CurrentRoom].Locked) {
-                Write-Host "You use the key to unlock the treasure chest!"
-                $Rooms[$CurrentRoom].Locked = $false
-                $Rooms[$CurrentRoom].Item = "treasure"
-                $Inventory = $Inventory | Where-Object { $_ -ne "key" }
+            if ($CorrectItemUses[$Item] -eq $CurrentRoom) {
+                Write-Host "You used the $Item correctly in the $CurrentRoom!"
+                $CorrectUsesCount++
+                $Inventory = $Inventory | Where-Object { $_ -ne $Item }
+                if ($CorrectUsesCount -eq 3) {
+                    Write-Host "`nCongratulations! You used three items correctly and won the game!"
+                    break
+                }
             } else {
-                Write-Host "You can't use the $Item here."
+                Write-Host "The $Item doesn't seem useful here."
             }
         } else {
             Write-Host "You don't have a $Item."
@@ -102,20 +133,9 @@ while ($true) {
         if ($Rooms[$CurrentRoom].Item) {
             Write-Host "You see a $($Rooms[$CurrentRoom].Item) here."
         }
-        if ($Rooms[$CurrentRoom].HiddenItem) {
-            Write-Host "After looking closely, you find a hidden $($Rooms[$CurrentRoom].HiddenItem)!"
-            $Rooms[$CurrentRoom].Item = $Rooms[$CurrentRoom].HiddenItem
-            $Rooms[$CurrentRoom].HiddenItem = $null
-        } else {
-            Write-Host "You don't find anything else of interest."
-        }
     }
     else {
         Write-Host "I don't understand that command."
     }
-
-    if ($Inventory -contains "treasure") {
-        Write-Host "`nCongratulations! You found the treasure and won the game!"
-        break
-    }
 }
+
