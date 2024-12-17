@@ -14,20 +14,31 @@ function Show-Instructions {
 
 function Generate-Rooms {
     return @{
-        "Hall"       = @{ Description = "You are in a grand hall with high ceilings."; Item = $null; HiddenItem = $null; Exits = @{} }
-        "Kitchen"    = @{ Description = "You are in a messy kitchen. It smells of old food."; Item = $null; HiddenItem = $null; Exits = @{} }
-        "Living Room"= @{ Description = "You are in a cozy living room with a fireplace."; Item = $null; HiddenItem = $null; Exits = @{} }
-        "Library"    = @{ Description = "You are in a dusty library filled with old books."; Item = $null; HiddenItem = $null; Exits = @{} }
-        "Attic"      = @{ Description = "You are in a dark and cluttered attic."; Item = $null; HiddenItem = $null; Exits = @{} }
-        "Basement"   = @{ Description = "You are in a cold, damp basement. The air is heavy."; Item = $null; HiddenItem = $null; Exits = @{} }
-        "Garden"     = @{ Description = "You are in a peaceful garden surrounded by flowers."; Item = $null; HiddenItem = $null; Exits = @{} }
-        "Office"     = @{ Description = "You are in a small office with papers scattered everywhere."; Item = $null; HiddenItem = $null; Exits = @{} }
+        "Hall"         = @{ Description = "You are in a grand hall with high ceilings."; Item = $null; Exits = @{} }
+        "Kitchen"      = @{ Description = "You are in a messy kitchen. It smells of old food."; Item = $null; Exits = @{} }
+        "Living Room"  = @{ Description = "You are in a cozy living room with a fireplace."; Item = $null; Exits = @{} }
+        "Library"      = @{ Description = "You are in a dusty library filled with old books."; Item = $null; Exits = @{} }
+        "Attic"        = @{ Description = "You are in a dark and cluttered attic."; Item = $null; Exits = @{} }
+        "Basement"     = @{ Description = "You are in a cold, damp basement. The air is heavy."; Item = $null; Exits = @{} }
+        "Garden"       = @{ Description = "You are in a peaceful garden surrounded by flowers."; Item = $null; Exits = @{} }
+        "Office"       = @{ Description = "You are in a small office with papers scattered everywhere."; Item = $null; Exits = @{} }
+        "Bedroom"      = @{ Description = "You are in a tidy bedroom with a large bed."; Item = $null; Exits = @{} }
+        "Bathroom"     = @{ Description = "You are in a small, clean bathroom."; Item = $null; Exits = @{} }
+        "Dining Room"  = @{ Description = "You are in an elegant dining room."; Item = $null; Exits = @{} }
+        "Balcony"      = @{ Description = "You are on a narrow balcony overlooking a garden."; Item = $null; Exits = @{} }
+        "Garage"       = @{ Description = "You are in a garage filled with tools and boxes."; Item = $null; Exits = @{} }
+        "Pantry"       = @{ Description = "You are in a small pantry with shelves of food."; Item = $null; Exits = @{} }
+        "Workshop"     = @{ Description = "You are in a cluttered workshop full of tools."; Item = $null; Exits = @{} }
+        "Rooftop"      = @{ Description = "You are on the rooftop, surrounded by fresh air."; Item = $null; Exits = @{} }
     }
 }
 
 function Randomize-Rooms {
     $Rooms = Generate-Rooms
-    $Items = @("key", "map", "book", "lantern", "shovel", "coin", "treasure", "note")
+    $Items = @("key", "map", "book", "lantern", "shovel", "coin", "treasure", "note",
+               "hammer", "wrench", "towel", "mirror", "flower", "glove", "ring", "clock")
+
+    # Sijoitetaan esineet satunnaisiin huoneisiin
     $Rooms.Keys | Get-Random -Count $Items.Count | ForEach-Object {
         $Room = $_
         $Item = $Items | Get-Random
@@ -35,10 +46,11 @@ function Randomize-Rooms {
         $Items = $Items | Where-Object { $_ -ne $Item }
     }
 
+    # Satunnaiset huoneyhteydet
     $Directions = @("Up", "Down", "Right", "Left")
     $RoomNames = $Rooms.Keys
     foreach ($Room in $RoomNames) {
-        $AvailableDirections = $Directions | Get-Random -Count 2
+        $AvailableDirections = $Directions | Get-Random -Count 3
         foreach ($Direction in $AvailableDirections) {
             $NextRoom = $RoomNames | Get-Random
             if ($NextRoom -ne $Room -and !$Rooms[$Room].Exits[$Direction]) {
@@ -52,14 +64,22 @@ function Randomize-Rooms {
 }
 
 $CorrectItemUses = @{
-    "key"     = "Living Room"
-    "map"     = "Library"
-    "book"    = "Office"
-    "lantern" = "Attic"
-    "shovel"  = "Garden"
-    "coin"    = "Basement"
-    "note"    = "Kitchen"
-    "treasure"= "Hall"
+    "key"       = "Living Room"
+    "map"       = "Library"
+    "book"      = "Office"
+    "lantern"   = "Attic"
+    "shovel"    = "Garden"
+    "coin"      = "Basement"
+    "note"      = "Kitchen"
+    "treasure"  = "Hall"
+    "hammer"    = "Workshop"
+    "wrench"    = "Garage"
+    "towel"     = "Bathroom"
+    "mirror"    = "Bedroom"
+    "flower"    = "Balcony"
+    "glove"     = "Pantry"
+    "ring"      = "Dining Room"
+    "clock"     = "Rooftop"
 }
 
 $Rooms = Randomize-Rooms
@@ -136,3 +156,4 @@ while ($true) {
         Write-Host "I don't understand that command."
     }
 }
+
