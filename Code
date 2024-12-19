@@ -7,7 +7,7 @@ function Show-Instructions {
     - 'get [item]' to pick up an item (e.g., 'get key')
     - 'use [item]' to use an item (e.g., 'use key')
     - 'inventory' to check your items
-    - 'look' to inspect the current room (reveals hidden items)
+    - 'look' to inspect the current room 
     - 'quit' to exit the game
     "
 }
@@ -38,7 +38,7 @@ function Randomize-Rooms {
     $Items = @("key", "map", "book", "lantern", "shovel", "coin", "treasure", "note",
                "hammer", "wrench", "towel", "mirror", "flower", "glove", "ring", "clock")
 
-    # Sijoitetaan esineet satunnaisiin huoneisiin
+    
     $Rooms.Keys | Get-Random -Count $Items.Count | ForEach-Object {
         $Room = $_
         $Item = $Items | Get-Random
@@ -46,7 +46,7 @@ function Randomize-Rooms {
         $Items = $Items | Where-Object { $_ -ne $Item }
     }
 
-    # Satunnaiset huoneyhteydet
+
     $Directions = @("Up", "Down", "Right", "Left")
     $RoomNames = $Rooms.Keys
     foreach ($Room in $RoomNames) {
@@ -125,11 +125,11 @@ while ($true) {
         $Item = $Command -replace "use ", ""
         if ($Inventory -contains $Item) {
             if ($CorrectItemUses[$Item] -eq $CurrentRoom) {
-                Write-Host "You used the $Item correctly in the $CurrentRoom!"
+                Write-Host "You used the $Item in the $CurrentRoom!"
                 $CorrectUsesCount++
                 $Inventory = $Inventory | Where-Object { $_ -ne $Item }
                 if ($CorrectUsesCount -eq 3) {
-                    Write-Host "`nCongratulations! You used three items correctly and won the game!"
+                    Write-Host "`nCongratulations!you are very sigma... now GET OUT!"
                     break
                 }
             } else {
