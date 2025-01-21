@@ -95,6 +95,7 @@ $Inventory = @()
 $CurrentRoom = "Hall"
 $CorrectUsesCount = 0
 
+Show-Instructions
 
 
 while ($true) {
@@ -164,7 +165,6 @@ while ($true) {
     else {
         Write-Host "I don't understand that command."
     }
-{Show-Instructions
-}
+
 }
 
