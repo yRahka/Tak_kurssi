@@ -95,7 +95,7 @@ $Inventory = @()
 $CurrentRoom = "Hall"
 $CorrectUsesCount = 0
 
-#Show-Instructions
+
 
 while ($true) {
     Write-Host "`nYou are in the $CurrentRoom."
@@ -160,6 +160,7 @@ while ($true) {
             Write-Host "You see a $($Rooms[$CurrentRoom].Item) here."
         }
     }
+Show-Instructions
     else {
         Write-Host "I don't understand that command."
     }
