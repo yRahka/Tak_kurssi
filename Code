@@ -164,7 +164,7 @@ while ($true) {
     else {
         Write-Host "I don't understand that command."
     }
-{$Show-Instructions
+{Show-Instructions
 }
 }
 
