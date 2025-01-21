@@ -1,135 +1,90 @@
 function Show-Instructions {
-    Write-Host "
-    Text-Based Adventure Game
-    =========================
-    Commands:
-    - 'go [direction]' to move (e.g., 'go up')
-    - 'get [item]' to pick up an item (e.g., 'get key')
-    - 'use [item]' to use an item (e.g., 'use key')
-    - 'inventory' to check your items
-    - 'look' to inspect the current room 
-    - 'quit' to exit the game
-    "
+    Write-Host "Commands: go [direction], get [item], use [item], inventory, quit"
 }
 
-function Generate-Rooms {
-    return @{
-        "Hall"         = @{ Description = "You are in a grand hall with high ceilings."; Item = $null; Exits = @{} }
-        "Kitchen"      = @{ Description = "You are in a messy kitchen. It smells of old food."; Item = $null; Exits = @{} }
-        "Living Room"  = @{ Description = "You are in a cozy living room with a fireplace."; Item = $null; Exits = @{} }
-        "Library"      = @{ Description = "You are in a dusty library filled with old books."; Item = $null; Exits = @{} }
-        "Attic"        = @{ Description = "You are in a dark and cluttered attic."; Item = $null; Exits = @{} }
-        "Basement"     = @{ Description = "You are in a cold, damp basement. The air is heavy."; Item = $null; Exits = @{} }
-        "Garden"       = @{ Description = "You are in a peaceful garden surrounded by flowers."; Item = $null; Exits = @{} }
-        "Office"       = @{ Description = "You are in a small office with papers scattered everywhere."; Item = $null; Exits = @{} }
-        "Bedroom"      = @{ Description = "You are in a tidy bedroom with a large bed."; Item = $null; Exits = @{} }
-        "Bathroom"     = @{ Description = "You are in a small, clean bathroom."; Item = $null; Exits = @{} }
-        "Dining Room"  = @{ Description = "You are in an elegant dining room."; Item = $null; Exits = @{} }
-        "Balcony"      = @{ Description = "You are on a narrow balcony overlooking a garden."; Item = $null; Exits = @{} }
-        "Garage"       = @{ Description = "You are in a garage filled with tools and boxes."; Item = $null; Exits = @{} }
-        "Pantry"       = @{ Description = "You are in a small pantry with shelves of food."; Item = $null; Exits = @{} }
-        "Workshop"     = @{ Description = "You are in a cluttered workshop full of tools."; Item = $null; Exits = @{} }
-        "Rooftop"      = @{ Description = "You are on the rooftop, surrounded by fresh air."; Item = $null; Exits = @{} }
+function Initialize-Game {
+    $Rooms = @{
+        "Hall"         = "A grand hall with high ceilings."
+        "Kitchen"      = "A messy kitchen that smells of old food."
+        "Living Room"  = "A cozy living room with a fireplace."
+        "Library"      = "A dusty library filled with old books."
+        "Attic"        = "A dark and cluttered attic."
+        "Basement"     = "A cold, damp basement with heavy air."
+        "Garden"       = "A peaceful garden surrounded by flowers."
+        "Office"       = "A small office with papers scattered everywhere."
+        "Bedroom"      = "A tidy bedroom with a large bed."
+        "Bathroom"     = "A small, clean bathroom."
+        "Dining Room"  = "An elegant dining room."
+        "Balcony"      = "A narrow balcony overlooking a garden."
+        "Garage"       = "A garage filled with tools and boxes."
+        "Pantry"       = "A small pantry with shelves of food."
+        "Workshop"     = "A cluttered workshop full of tools."
+        "Rooftop"      = "A rooftop surrounded by fresh air."
     }
-}
-
-function Randomize-Rooms {
-    $Rooms = Generate-Rooms
-    $Items = @("key", "map", "book", "lantern", "shovel", "coin", "treasure", "note",
-               "hammer", "wrench", "towel", "mirror", "flower", "glove", "ring", "clock")
-
-    
-    $Rooms.Keys | Get-Random -Count $Items.Count | ForEach-Object {
-        $Room = $_
-        $Item = $Items | Get-Random
-        $Rooms[$Room].Item = $Item
-        $Items = $Items | Where-Object { $_ -ne $Item }
+    $Items = @{
+        "Living Room"  = "key"; "Library" = "map"; "Office" = "book"; "Attic" = "lantern"
+        "Garden"       = "shovel"; "Basement" = "coin"; "Kitchen" = "note"; "Hall" = "treasure"
+        "Workshop"     = "hammer"; "Garage" = "wrench"; "Bathroom" = "towel"; "Bedroom" = "mirror"
+        "Balcony"      = "flower"; "Pantry" = "glove"; "Dining Room" = "ring"; "Rooftop" = "clock"
     }
-
-
-    $Directions = @("Up", "Down", "Right", "Left")
-    $RoomNames = $Rooms.Keys
-    foreach ($Room in $RoomNames) {
-        $AvailableDirections = $Directions | Get-Random -Count 2
-        foreach ($Direction in $AvailableDirections) {
-            $NextRoom = $RoomNames | Get-Random
-            if ($NextRoom -ne $Room -and !$Rooms[$Room].Exits[$Direction]) {
-                $Rooms[$Room].Exits[$Direction] = $NextRoom
-                $Opposite = switch ($Direction) { "Up" { "Down" } "Down" { "Up" } "Right" { "Left" } "Left" { "Right" } }
-                $Rooms[$NextRoom].Exits[$Opposite] = $Room
-            }
-        }
+    $CorrectUses = @{
+        "key" = "Living Room"; "map" = "Library"; "book" = "Office"; "lantern" = "Attic"
+        "shovel" = "Garden"; "coin" = "Basement"; "note" = "Kitchen"; "treasure" = "Hall"
+        "hammer" = "Workshop"; "wrench" = "Garage"; "towel" = "Bathroom"; "mirror" = "Bedroom"
+        "flower" = "Balcony"; "glove" = "Pantry"; "ring" = "Dining Room"; "clock" = "Rooftop"
     }
-    return $Rooms
+    $RoomLinks = @{
+        "Hall"         = @{ "Right" = "Living Room"; "Up" = "Kitchen" }
+        "Kitchen"      = @{ "Down" = "Hall"; "Left" = "Library" }
+        "Living Room"  = @{ "Left" = "Hall"; "Up" = "Dining Room" }
+        "Library"      = @{ "Right" = "Kitchen"; "Up" = "Office" }
+        "Attic"        = @{ "Down" = "Office" }
+        "Basement"     = @{ "Up" = "Workshop" }
+        "Garden"       = @{ "Up" = "Balcony" }
+        "Office"       = @{ "Down" = "Library"; "Up" = "Attic" }
+        "Bedroom"      = @{ "Right" = "Bathroom"; "Down" = "Dining Room" }
+        "Bathroom"     = @{ "Left" = "Bedroom" }
+        "Dining Room"  = @{ "Up" = "Living Room"; "Right" = "Pantry" }
+        "Balcony"      = @{ "Down" = "Garden" }
+        "Garage"       = @{ "Right" = "Workshop" }
+        "Pantry"       = @{ "Left" = "Dining Room" }
+        "Workshop"     = @{ "Left" = "Garage"; "Down" = "Basement" }
+        "Rooftop"      = @{ "Down" = "Balcony" }
+    }
+    return @($Rooms, $Items, $CorrectUses, $RoomLinks)
 }
 
-$CorrectItemUses = @{
-    "key"       = "Living Room"
-    "map"       = "Library"
-    "book"      = "Office"
-    "lantern"   = "Attic"
-    "shovel"    = "Garden"
-    "coin"      = "Basement"
-    "note"      = "Kitchen"
-    "treasure"  = "Hall"
-    "hammer"    = "Workshop"
-    "wrench"    = "Garage"
-    "towel"     = "Bathroom"
-    "mirror"    = "Bedroom"
-    "flower"    = "Balcony"
-    "glove"     = "Pantry"
-    "ring"      = "Dining Room"
-    "clock"     = "Rooftop"
-}
-
-$Rooms = Randomize-Rooms
-$Inventory = @()
-$CurrentRoom = "Hall"
-$CorrectUsesCount = 0
-
+$Data = Initialize-Game
+$Rooms = $Data[0]; $Items = $Data[1]; $CorrectUses = $Data[2]; $RoomLinks = $Data[3]
+$Inventory = @(); $CurrentRoom = "Hall"; $CorrectUsesCount = 0
 Show-Instructions
 
 while ($true) {
-    Write-Host "`nYou are in the $CurrentRoom."
-    Write-Host $Rooms[$CurrentRoom].Description
-
-    if ($Rooms[$CurrentRoom].Item) {
-        Write-Host "You see a $($Rooms[$CurrentRoom].Item) here."
-    }
-
+    Write-Host "`nYou are in the $CurrentRoom. $($Rooms[$CurrentRoom])"
+    if ($Items.ContainsKey($CurrentRoom)) { Write-Host "You see a $($Items[$CurrentRoom])." }
     $Command = Read-Host "What will you do?"
-
-    if ($Command -eq "quit") {
-        Write-Host "Thanks for playing! Goodbye."
-        break
-    }
+    if ($Command -eq "quit") { break }
     elseif ($Command -like "go *") {
-        $Direction = $Command -replace "go ", ""
-        if ($Rooms[$CurrentRoom].Exits[$Direction]) {
-            $CurrentRoom = $Rooms[$CurrentRoom].Exits[$Direction]
-        } else {
-            Write-Host "You can't go that way!"
-        }
-    }
-    elseif ($Command -like "get *") {
+        $Dir = $Command -replace "go ", ""
+        if ($RoomLinks[$CurrentRoom].ContainsKey($Dir)) { $CurrentRoom = $RoomLinks[$CurrentRoom][$Dir] } else { Write-Host "You can't go that way!" }
+    } elseif ($Command -like "get *") {
         $Item = $Command -replace "get ", ""
-        if ($Rooms[$CurrentRoom].Item -eq $Item) {
+        if ($Items.ContainsKey($CurrentRoom) -and $Items[$CurrentRoom] -eq $Item) {
             Write-Host "You picked up the $Item!"
             $Inventory += $Item
-            $Rooms[$CurrentRoom].Item = $null
+            $Items.Remove($CurrentRoom)
         } else {
             Write-Host "There is no $Item here."
         }
-    }
-    elseif ($Command -like "use *") {
+    } elseif ($Command -like "use *") {
         $Item = $Command -replace "use ", ""
         if ($Inventory -contains $Item) {
-            if ($CorrectItemUses[$Item] -eq $CurrentRoom) {
-                Write-Host "You used the $Item in the $CurrentRoom!"
+            if ($CorrectUses[$Item] -eq $CurrentRoom) {
+                Write-Host "You used the $Item correctly in the $CurrentRoom!"
                 $CorrectUsesCount++
                 $Inventory = $Inventory | Where-Object { $_ -ne $Item }
                 if ($CorrectUsesCount -eq 3) {
-                    Write-Host "`nCongratulations!you are very sigma... now GET OUT!"
+                    Write-Host "`nCongratulations! You used three items correctly and won the game!"
                     break
                 }
             } else {
@@ -138,22 +93,13 @@ while ($true) {
         } else {
             Write-Host "You don't have a $Item."
         }
-    }
-    elseif ($Command -eq "inventory") {
+    } elseif ($Command -eq "inventory") {
         if ($Inventory.Count -gt 0) {
             Write-Host "Inventory: $($Inventory -join ', ')"
         } else {
             Write-Host "Your inventory is empty."
         }
-    }
-    elseif ($Command -eq "look") {
-        Write-Host $Rooms[$CurrentRoom].Description
-        if ($Rooms[$CurrentRoom].Item) {
-            Write-Host "You see a $($Rooms[$CurrentRoom].Item) here."
-        }
-    }
-    else {
-        Write-Host "I don't understand that command."
+    } else {
+        Write-Host "Invalid command."
     }
 }
-
