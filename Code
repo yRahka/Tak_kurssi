@@ -38,6 +38,7 @@ function Randomize-Rooms {
     $Items = @("key", "map", "book", "lantern", "shovel", "coin", "treasure", "note",
                "hammer", "wrench", "towel", "mirror", "flower", "glove", "ring", "clock")
 
+    # Assign random items to rooms
     $Rooms.Keys | Get-Random -Count $Items.Count | ForEach-Object {
         $Room = $_
         $Item = $Items | Get-Random
@@ -45,21 +46,30 @@ function Randomize-Rooms {
         $Items = $Items | Where-Object { $_ -ne $Item }
     }
 
+    # Assign random exits to rooms
     $Directions = @("Up", "Down", "Right", "Left")
     $RoomNames = $Rooms.Keys
     foreach ($Room in $RoomNames) {
-        $AvailableDirections = $Directions | Get-Random -Count 2
-        foreach ($Direction in $AvailableDirections) {
-            $NextRoom = $RoomNames | Get-Random
-            if ($NextRoom -ne $Room -and !$Rooms[$Room].Exits[$Direction]) {
-                $Rooms[$Room].Exits[$Direction] = $NextRoom
-                $Opposite = switch ($Direction) { "Up" { "Down" } "Down" { "Up" } "Right" { "Left" } "Left" { "Right" } }
-                $Rooms[$NextRoom].Exits[$Opposite] = $Room
+        foreach ($Direction in ($Directions | Get-Random -Count 2)) {
+            if (-not $Rooms[$Room].Exits[$Direction]) { # Ensure no existing room in the direction
+                $NextRoom = $RoomNames | Get-Random
+                if ($NextRoom -ne $Room -and (-not ($Rooms[$NextRoom].Exits.Values -contains $Room))) { 
+                    # Ensure no circular or duplicate connection
+                    $Rooms[$Room].Exits[$Direction] = $NextRoom
+                    $Opposite = switch ($Direction) {
+                        "Up" { "Down" }
+                        "Down" { "Up" }
+                        "Right" { "Left" }
+                        "Left" { "Right" }
+                    }
+                    $Rooms[$NextRoom].Exits[$Opposite] = $Room
+                }
             }
         }
     }
     return $Rooms
 }
+
 
 $CorrectItemUses = @{
     "key"       = "Living Room"
