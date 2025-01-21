@@ -7,7 +7,7 @@ function Show-Instructions {
     - 'get [item]' to pick up an item (e.g., 'get key')
     - 'use [item]' to use an item (e.g., 'use key')
     - 'inventory' to check your items
-    - 'look' to inspect the current room (reveals hidden items)
+    - 'look' to inspect the current room
     - 'quit' to exit the game
     "
 }
@@ -38,7 +38,6 @@ function Randomize-Rooms {
     $Items = @("key", "map", "book", "lantern", "shovel", "coin", "treasure", "note",
                "hammer", "wrench", "towel", "mirror", "flower", "glove", "ring", "clock")
 
-    # Sijoitetaan esineet satunnaisiin huoneisiin
     $Rooms.Keys | Get-Random -Count $Items.Count | ForEach-Object {
         $Room = $_
         $Item = $Items | Get-Random
@@ -46,7 +45,6 @@ function Randomize-Rooms {
         $Items = $Items | Where-Object { $_ -ne $Item }
     }
 
-    # Satunnaiset huoneyhteydet
     $Directions = @("Up", "Down", "Right", "Left")
     $RoomNames = $Rooms.Keys
     foreach ($Room in $RoomNames) {
@@ -86,8 +84,6 @@ $Rooms = Randomize-Rooms
 $Inventory = @()
 $CurrentRoom = "Hall"
 $CorrectUsesCount = 0
-
-Show-Instructions
 
 while ($true) {
     Write-Host "`nYou are in the $CurrentRoom."
@@ -150,11 +146,5 @@ while ($true) {
         Write-Host $Rooms[$CurrentRoom].Description
         if ($Rooms[$CurrentRoom].Item) {
             Write-Host "You see a $($Rooms[$CurrentRoom].Item) here."
-        }
-    }
-    else {
-        Write-Host "I don't understand that command."
-    }
-}
    
 
