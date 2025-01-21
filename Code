@@ -1,16 +1,4 @@
-function Show-Instructions {
-    Write-Host "
-    Text-Based Adventure Game
-    =========================
-    Commands:
-    - 'go [direction]' to move (e.g., 'go up')
-    - 'get [item]' to pick up an item (e.g., 'get key')
-    - 'use [item]' to use an item (e.g., 'use key')
-    - 'inventory' to check your items
-    - 'look' to inspect the current room (reveals hidden items)
-    - 'quit' to exit the game
-    "
-}
+
 
 function Generate-Rooms {
     return @{
@@ -155,5 +143,18 @@ while ($true) {
     else {
         Write-Host "I don't understand that command."
     }
+}
+function Show-Instructions {
+    Write-Host "
+    Text-Based Adventure Game
+    =========================
+    Commands:
+    - 'go [direction]' to move (e.g., 'go up')
+    - 'get [item]' to pick up an item (e.g., 'get key')
+    - 'use [item]' to use an item (e.g., 'use key')
+    - 'inventory' to check your items
+    - 'look' to inspect the current room (reveals hidden items)
+    - 'quit' to exit the game
+    "
 }
 
