@@ -7,7 +7,7 @@ function Show-Instructions {
     - 'get [item]' to pick up an item (e.g., 'get key')
     - 'use [item]' to use an item (e.g., 'use key')
     - 'inventory' to check your items
-    - 'look' to inspect the current room (reveals hidden items)
+    - 'look' to inspect the current room 
     - 'quit' to exit the game
     "
 }
