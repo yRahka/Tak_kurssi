@@ -160,8 +160,9 @@ while ($true) {
             Write-Host "You see a $($Rooms[$CurrentRoom].Item) here."
         }
     }
-Show-Instructions
+
     else {
         Write-Host "I don't understand that command."
     }
 }
+Show-Instructions
