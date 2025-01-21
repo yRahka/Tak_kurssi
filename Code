@@ -48,7 +48,7 @@ function Randomize-Rooms {
     $Directions = @("Up", "Down", "Right", "Left")
     $RoomNames = $Rooms.Keys
     foreach ($Room in $RoomNames) {
-        $AvailableDirections = $Directions | Get-Random -Count 1
+        $AvailableDirections = $Directions | Get-Random -Count 2
         foreach ($Direction in $AvailableDirections) {
             $NextRoom = $RoomNames | Get-Random
             if ($NextRoom -ne $Room -and !$Rooms[$Room].Exits[$Direction]) {
