@@ -60,3 +60,41 @@ while ($true) {
         $Item = $Command -replace "get ", ""
         if ($Inventory -contains $Item) { $Inventory += } elif ($Rooms.Items){
  
+Write-Host "You picked up the $Item!"
+            $Inventory += $Item
+            $Items = $Items | Where-Object { $_ -ne $Item }
+        } else {
+            Write-Host "There is no $Item here."
+        }
+    } elseif ($Command -like "use *") {
+        $Item = $Command -replace "use ", ""
+        if ($Inventory -contains $Item) {
+            if ($CorrectUses[$Item] -eq $CurrentRoom) {
+                Write-Host "You used the $Item correctly in the $CurrentRoom!"
+                $CorrectUsesCount++
+                $Inventory = $Inventory | Where-Object { $_ -ne $Item }
+                if ($CorrectUsesCount -eq 3) {
+                    Write-Host "`nCongratulations! You used three items correctly and won the game!"
+                    break
+                }
+            } else {
+                Write-Host "The $Item doesn't seem useful here."
+            }
+        } else {
+            Write-Host "You don't have a $Item."
+        }
+    } elseif ($Command -eq "inventory") {
+        if ($Inventory.Count -gt 0) {
+            Write-Host "Inventory: $($Inventory -join ', ')"
+        } else {
+            Write-Host "Your inventory is empty."
+        }
+    } elseif ($Command -eq "look") {
+        Write-Host $Rooms[$CurrentRoom]
+        if ($Items.Contains($CurrentRoom)) {
+            Write-Host "You see a $($Items | Get-Random) here."
+        }
+    } else {
+        Write-Host "Invalid command."
+    }
+}
