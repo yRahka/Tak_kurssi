@@ -38,7 +38,6 @@ function Randomize-Rooms {
     $Items = @("key", "map", "book", "lantern", "shovel", "coin", "treasure", "note",
                "hammer", "wrench", "towel", "mirror", "flower", "glove", "ring", "clock")
 
-    # Sijoitetaan esineet satunnaisiin huoneisiin
     $Rooms.Keys | Get-Random -Count $Items.Count | ForEach-Object {
         $Room = $_
         $Item = $Items | Get-Random
@@ -46,7 +45,6 @@ function Randomize-Rooms {
         $Items = $Items | Where-Object { $_ -ne $Item }
     }
 
-    # Satunnaiset huoneyhteydet
     $Directions = @("Up", "Down", "Right", "Left")
     $RoomNames = $Rooms.Keys
     foreach ($Room in $RoomNames) {
