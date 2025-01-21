@@ -95,7 +95,7 @@ $Inventory = @()
 $CurrentRoom = "Hall"
 $CorrectUsesCount = 0
 
-
+Show-Instructions
 
 while ($true) {
     Write-Host "`nYou are in the $CurrentRoom."
